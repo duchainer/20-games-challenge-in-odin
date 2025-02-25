@@ -58,6 +58,10 @@ main :: proc(){
         if ball.y < 0 || ball.y > WINDOW_HEIGHT- ball.height{
             ball_speed.y *= -1
         }
+
+        if rl.CheckCollisionRecs(ball, paddle_left){
+            ball_speed.x *= -1
+        }
         // endsection ball_movement
 
 
