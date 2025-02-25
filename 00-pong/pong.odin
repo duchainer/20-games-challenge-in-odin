@@ -21,6 +21,11 @@ main :: proc(){
     rl.SetTargetFPS(60);
 
 
+    rl.InitAudioDevice()
+    defer rl.CloseAudioDevice()
+
+    HIT_SOUND := rl.LoadSound("hit.wav")
+
     text_height : i32 = 100
     paddle_left := rl.Rectangle{
         x = 0,
@@ -61,6 +66,7 @@ main :: proc(){
 
         if rl.CheckCollisionRecs(ball, paddle_left){
             ball_speed.x *= -1
+            rl.PlaySound(HIT_SOUND)
         }
         // endsection ball_movement
 
