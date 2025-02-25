@@ -52,7 +52,7 @@ main :: proc(){
         // NOTE, we don't need delta time, because we always will run at 60 fps
         ball.x += ball_speed.x
         ball.y += ball_speed.y
-        if ball.x < 0 || ball.x > WINDOW_WIDTH - ball.width{
+        if  ball.x > WINDOW_WIDTH - ball.width{
             ball_speed.x *= -1
         }
         if ball.y < 0 || ball.y > WINDOW_HEIGHT- ball.height{
