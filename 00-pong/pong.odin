@@ -52,12 +52,15 @@ main :: proc(){
         }
         // endsection ball_movement
 
+
+        // section draw
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
         rl.DrawText("Hellope", 100, text_height, 25, rl.WHITE)
         rl.DrawRectangleRec(paddle_left, rl.WHITE)
         rl.DrawRectangleRec(ball, rl.WHITE)
         rl.EndDrawing()
+        // endsection draw
     }
 
 }
