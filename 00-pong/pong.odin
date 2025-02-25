@@ -2,6 +2,14 @@ package pong
 import rl "vendor:raylib"
 import "base:builtin"
 
+rect_center :: proc(rect: rl.Rectangle) -> rl.Vector2{
+    return rl.Vector2{
+        rect.x + rect.width/2,
+        rect.y + rect.height/2
+    }
+}
+
+
 main :: proc(){
 
     WINDOW_WIDTH :: 800
@@ -59,6 +67,7 @@ main :: proc(){
         rl.DrawText("Hellope", 100, text_height, 25, rl.WHITE)
         rl.DrawRectangleRec(paddle_left, rl.WHITE)
         rl.DrawRectangleRec(ball, rl.WHITE)
+        rl.DrawRectangleV(rect_center(paddle_left) - {1,1}, rl.Vector2{2,2}, rl.RED)
         rl.EndDrawing()
         // endsection draw
     }
