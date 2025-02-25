@@ -1,12 +1,13 @@
 package pong
 import rl "vendor:raylib"
+import "base:builtin"
 
 main :: proc(){
 
-    width :: 800
-    height :: 450
+    WINDOW_WIDTH :: 800
+    WINDOW_HEIGHT :: 450
     title :: "Pong without tutorial"
-    rl.InitWindow(width, height, title)
+    rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title)
     defer rl.CloseWindow();
 
     rl.SetTargetFPS(60);
@@ -26,6 +27,7 @@ main :: proc(){
         if rl.IsKeyDown(.S){
             paddle_left.y += 10 // Move down
         }
+        paddle_left.y = builtin.clamp(paddle_left.y, 0, WINDOW_HEIGHT - paddle_left.height)
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
