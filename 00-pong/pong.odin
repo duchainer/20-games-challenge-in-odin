@@ -20,7 +20,16 @@ main :: proc(){
         width = 10,
         height = 50
     }
+    ball := rl.Rectangle{
+        x = WINDOW_WIDTH/2,
+        y = WINDOW_HEIGHT/2,
+        width = 10,
+        height = 10
+    }
+    ball_speed := rl.Vector2{-5, -3}
     for !rl.WindowShouldClose(){
+
+        // section paddle_movement
         if rl.IsKeyDown(.W){
             paddle_left.y -= 10 // Move up
         }
@@ -28,11 +37,26 @@ main :: proc(){
             paddle_left.y += 10 // Move down
         }
         paddle_left.y = builtin.clamp(paddle_left.y, 0, WINDOW_HEIGHT - paddle_left.height)
+        // endsection paddle_movement
+
+
+        // section ball_movement
+        // NOTE, we don't need delta time, because we always will run at 60 fps
+        ball.x += ball_speed.x
+        ball.y += ball_speed.y
+        if ball.x < 0 || ball.x > WINDOW_WIDTH - ball.width{
+            ball_speed.x *= -1
+        }
+        if ball.y < 0 || ball.y > WINDOW_HEIGHT- ball.height{
+            ball_speed.y *= -1
+        }
+        // endsection ball_movement
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
         rl.DrawText("Hellope", 100, text_height, 25, rl.WHITE)
         rl.DrawRectangleRec(paddle_left, rl.WHITE)
+        rl.DrawRectangleRec(ball, rl.WHITE)
         rl.EndDrawing()
     }
 
