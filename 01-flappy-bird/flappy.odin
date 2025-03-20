@@ -27,6 +27,17 @@ main :: proc(){
         vertical_speed = -1 // Towards the top of the window
     }
 
+    obstacle_arr : [10]rl.Rectangle
+
+    for &obstacle, i in obstacle_arr{
+        obstacle = rl.Rectangle{
+            x=f32(WINDOW_WIDTH*((i+1)/2)),
+            y=-50,
+            width=60,
+            height=WINDOW_WIDTH/2,
+        }
+    }
+
     for !rl.WindowShouldClose(){
         // section input
         if rl.IsKeyPressed(.SPACE){
@@ -45,7 +56,10 @@ main :: proc(){
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
 
-        rl.DrawRectangleRec(bird, rl.RED)
+        rl.DrawRectangleRec(bird, rl.WHITE)
+        for obstacle in obstacle_arr{
+            rl.DrawRectangleRec(obstacle, rl.WHITE)
+        }
         rl.EndDrawing()
         // endsection drawing
 
