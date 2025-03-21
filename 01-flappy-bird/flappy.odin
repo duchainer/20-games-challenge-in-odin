@@ -8,9 +8,9 @@ main :: proc(){
     WINDOW_HEIGHT :: 450
     title :: "duchainer's Flappy Bird"
     rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title)
-    defer rl.CloseWindow();
+    defer rl.CloseWindow()
 
-    rl.SetTargetFPS(60);
+    rl.SetTargetFPS(60)
 
     Bird :: struct{
         using rect: rl.Rectangle,
@@ -24,7 +24,7 @@ main :: proc(){
             width=20,
             height=20,
         },
-        vertical_speed = -1 // Towards the top of the window
+        vertical_speed = -1, // Towards the top of the window
     }
 
     obstacle_arr : [10]rl.Rectangle
