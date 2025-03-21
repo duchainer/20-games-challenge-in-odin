@@ -37,6 +37,7 @@ main :: proc(){
             height=WINDOW_WIDTH/2,
         }
     }
+    obstacles_speed :f32 = -3
 
     for !rl.WindowShouldClose(){
         // section input
@@ -50,6 +51,11 @@ main :: proc(){
         bird.y += bird.vertical_speed
         // bird.vertical_speed *= 0.9
         bird.vertical_speed += 0.2
+
+        for &obstacle in obstacle_arr{
+            obstacle.x += obstacles_speed
+        }
+
         // endsection process
 
         // section drawing
