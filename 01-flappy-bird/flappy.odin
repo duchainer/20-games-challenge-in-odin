@@ -39,7 +39,7 @@ main :: proc(){
     }
     obstacles_speed :f32 = -3
 
-    for !rl.WindowShouldClose(){
+    game_loop: for !rl.WindowShouldClose(){
         // section input
         if rl.IsKeyPressed(.SPACE){
             // Towards the top of the window
@@ -54,6 +54,9 @@ main :: proc(){
 
         for &obstacle in obstacle_arr{
             obstacle.x += obstacles_speed
+            if rl.CheckCollisionRecs(bird, obstacle){
+                break game_loop
+            }
         }
 
         // endsection process
