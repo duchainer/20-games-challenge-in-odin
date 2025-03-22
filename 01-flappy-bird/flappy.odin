@@ -1,9 +1,11 @@
 package flappy
 
 import rl "vendor:raylib"
+import "core:math/rand"
 
 main :: proc(){
 
+    // section raylib-setup
     WINDOW_WIDTH :: 800
     WINDOW_HEIGHT :: 450
     title :: "duchainer's Flappy Bird"
@@ -11,66 +13,153 @@ main :: proc(){
     defer rl.CloseWindow()
 
     rl.SetTargetFPS(60)
+    // endsection raylib-setup
+
 
     Bird :: struct{
         using rect: rl.Rectangle,
         vertical_speed: f32,
     }
 
-    bird := Bird{
-        rect= rl.Rectangle{
-            x=WINDOW_WIDTH/2,
-            y=WINDOW_HEIGHT/2,
-            width=20,
-            height=20,
-        },
-        vertical_speed = -1, // Towards the top of the window
-    }
+    bird : Bird
 
     obstacle_arr : [10]rl.Rectangle
 
-    for &obstacle, i in obstacle_arr{
-        obstacle = rl.Rectangle{
-            x=f32(WINDOW_WIDTH*((i+1)/2)),
-            y=-50,
-            width=60,
-            height=WINDOW_WIDTH/2,
-        }
+    obstacles_speed :f32
+
+    GROUND_HEIGHT :: 5
+    ceiling : rl.Rectangle
+    ground : rl.Rectangle
+
+    UI_HEIGHT :: 30
+    ui_background := rl.Rectangle{
+        x=0,
+        y=0,
+        width = WINDOW_WIDTH,
+        height = UI_HEIGHT,
     }
-    obstacles_speed :f32 = -3
 
-    game_loop: for !rl.WindowShouldClose(){
-        // section input
-        if rl.IsKeyPressed(.SPACE){
-            // Towards the top of the window
-            bird.vertical_speed -= 5
+
+    GLOBAL_GAME_STATE :: enum{
+        MAIN_MENU,
+        GAME_START,
+        GAME_RUNNING,
+        GAME_ENDED,
+    }
+
+    global_game_state := GLOBAL_GAME_STATE.GAME_START
+
+    for !rl.WindowShouldClose(){
+        switch global_game_state{
+        case .MAIN_MENU: {
+                global_game_state = .GAME_RUNNING
         }
-        // endsection input
-
-        // section process
-        bird.y += bird.vertical_speed
-        // bird.vertical_speed *= 0.9
-        bird.vertical_speed += 0.2
-
-        for &obstacle in obstacle_arr{
-            obstacle.x += obstacles_speed
-            if rl.CheckCollisionRecs(bird, obstacle){
-                break game_loop
+        case .GAME_START: {
+            bird = Bird{
+                rect= rl.Rectangle{
+                    x=WINDOW_WIDTH/2,
+                    y=WINDOW_HEIGHT/2,
+                    width=20,
+                    height=20,
+                },
+                vertical_speed = -1, // Towards the top of the window
             }
+
+            for &obstacle, i in obstacle_arr{
+                obstacle = rl.Rectangle{
+                    x=f32(WINDOW_WIDTH*((i+1)/2)),
+                    y=f32(rand.int31_max(WINDOW_HEIGHT/2)) - WINDOW_HEIGHT/2,
+                    width=60,
+                    height=WINDOW_WIDTH/2,
+                }
+            }
+            obstacles_speed = -3
+            ceiling = rl.Rectangle{
+                x=0,
+                y= UI_HEIGHT,
+                width = WINDOW_WIDTH,
+                height = GROUND_HEIGHT,
+            }
+
+            ground = rl.Rectangle{
+                x=0,
+                y= WINDOW_HEIGHT - GROUND_HEIGHT,
+                width = WINDOW_WIDTH,
+                height = GROUND_HEIGHT,
+            }
+            global_game_state = .GAME_RUNNING
+            fallthrough
+        }
+        case .GAME_RUNNING :{
+            // section input
+            if rl.IsKeyPressed(.SPACE){
+                // Towards the top of the window
+                bird.vertical_speed -= 5
+            }
+            // endsection input
+
+
+            // section process
+            bird.y += bird.vertical_speed
+            // bird.vertical_speed *= 0.9
+            bird.vertical_speed += 0.2
+
+            for &obstacle in obstacle_arr{
+                obstacle.x += obstacles_speed
+                if rl.CheckCollisionRecs(bird, obstacle){
+                    global_game_state = .GAME_ENDED
+                    continue
+                }
+            }
+            // ceiling check
+            if rl.CheckCollisionRecs(bird, ceiling){
+                global_game_state = .GAME_ENDED
+                continue
+            }
+            // ground check
+            if rl.CheckCollisionRecs(bird, ground){
+                global_game_state = .GAME_ENDED
+                continue
+            }
+
+
+            // endsection process
+
+
+            // section drawing
+            rl.BeginDrawing()
+            rl.ClearBackground(rl.BLACK)
+
+            rl.DrawRectangleRec(bird, rl.WHITE)
+            for obstacle in obstacle_arr{
+                rl.DrawRectangleRec(obstacle, rl.WHITE)
+            }
+            rl.DrawRectangleRec(ceiling, rl.WHITE)
+            rl.DrawRectangleRec(ground, rl.WHITE)
+
+
+            rl.EndDrawing()
+            // endsection drawing
         }
 
-        // endsection process
+        case .GAME_ENDED:  {
+            // section input
+            if rl.IsKeyPressed(.SPACE){
+                global_game_state = .GAME_START
+                continue
+            }
+            // endsection input
 
-        // section drawing
-        rl.BeginDrawing()
-        rl.ClearBackground(rl.BLACK)
-
-        rl.DrawRectangleRec(bird, rl.WHITE)
-        for obstacle in obstacle_arr{
-            rl.DrawRectangleRec(obstacle, rl.WHITE)
+            // section drawing
+            rl.BeginDrawing()
+            game_over_center :[2]i32: {WINDOW_WIDTH/2, WINDOW_HEIGHT/8}
+            rl.DrawRectangle(game_over_center.x-30, game_over_center.y-5, 75, 20, rl.GRAY)
+            rl.DrawText("Game Over", game_over_center.x-20, game_over_center.y, 10, rl.WHITE)
+            rl.EndDrawing()
+            // endsection drawing
         }
-        rl.EndDrawing()
-        // endsection drawing
+            free_all(context.temp_allocator)
+        }
 
     }
 
