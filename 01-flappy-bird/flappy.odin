@@ -17,6 +17,14 @@ main :: proc(){
     rl.SetTargetFPS(60)
     // endsection raylib-setup
 
+    generate_obstacle:: proc(height:i32) -> rl.Rectangle {
+        return rl.Rectangle{
+            x=f32(WINDOW_WIDTH),
+            y=f32(height) - WINDOW_HEIGHT/2,
+            width=60,
+            height=WINDOW_WIDTH/2,
+        }
+    }
 
     Bird :: struct{
         using rect: rl.Rectangle,
@@ -25,7 +33,7 @@ main :: proc(){
 
     bird : Bird
 
-    obstacle_arr : [10]rl.Rectangle
+    obstacles_arr : [3]rl.Rectangle
 
     obstacles_speed :f32
 
@@ -67,15 +75,13 @@ main :: proc(){
                 },
                 vertical_speed = -1, // Towards the top of the window
             }
-
-            for &obstacle, i in obstacle_arr{
-                obstacle = rl.Rectangle{
-                    x=f32(WINDOW_WIDTH*((i+1)/2)),
-                    y=f32(rand.int31_max(WINDOW_HEIGHT/2)) - WINDOW_HEIGHT/2,
-                    width=60,
-                    height=WINDOW_WIDTH/2,
-                }
+            obstacles_arr = [3]rl.Rectangle{
+                // We make the first one easier
+                generate_obstacle(rand.int31_max(WINDOW_HEIGHT/4)),
+                {},
+                {},
             }
+
             obstacles_speed = -3
             ceiling = rl.Rectangle{
                 x=0,
@@ -110,8 +116,7 @@ main :: proc(){
             bird.y += bird.vertical_speed
             // bird.vertical_speed *= 0.9
             bird.vertical_speed += 0.2
-
-            for &obstacle in obstacle_arr{
+            for &obstacle in obstacles_arr{
                 obstacle.x += obstacles_speed
                 if rl.CheckCollisionRecs(bird, obstacle){
                     global_game_state = .GAME_ENDED
@@ -135,6 +140,11 @@ main :: proc(){
             // Because we start half a screen away from the first obstacle
             score = i32(0.5 + math.floor(traveled_distance) / (WINDOW_WIDTH) )
 
+            if i32(traveled_distance) % WINDOW_WIDTH < i32(-obstacles_speed){
+                obstacles_arr[score % i32(len(obstacles_arr))] = generate_obstacle(
+                    rand.int31_max(WINDOW_HEIGHT/2),
+                )
+            }
             // endsection process
 
 
@@ -143,7 +153,7 @@ main :: proc(){
             rl.ClearBackground(rl.BLACK)
 
             rl.DrawRectangleRec(bird, rl.WHITE)
-            for obstacle in obstacle_arr{
+            for obstacle in obstacles_arr{
                 rl.DrawRectangleRec(obstacle, rl.WHITE)
             }
             rl.DrawRectangleRec(ceiling, rl.WHITE)
