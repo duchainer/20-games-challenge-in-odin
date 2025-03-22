@@ -73,7 +73,7 @@ main :: proc(){
                     width=20,
                     height=20,
                 },
-                vertical_speed = -1, // Towards the top of the window
+                vertical_speed = -5, // Towards the top of the window
             }
             rand_height := rand.int31_max(WINDOW_HEIGHT/2)
             obstacles_arr = [3][2]rl.Rectangle{
