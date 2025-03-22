@@ -2,6 +2,8 @@ package flappy
 
 import rl "vendor:raylib"
 import "core:math/rand"
+import "core:fmt"
+import "core:math"
 
 main :: proc(){
 
@@ -38,7 +40,8 @@ main :: proc(){
         width = WINDOW_WIDTH,
         height = UI_HEIGHT,
     }
-
+    traveled_distance: f64
+    score :i32 = 0
 
     GLOBAL_GAME_STATE :: enum{
         MAIN_MENU,
@@ -87,6 +90,10 @@ main :: proc(){
                 width = WINDOW_WIDTH,
                 height = GROUND_HEIGHT,
             }
+
+            traveled_distance = 0
+            score = 0
+
             global_game_state = .GAME_RUNNING
             fallthrough
         }
@@ -122,6 +129,11 @@ main :: proc(){
                 continue
             }
 
+            // scoring
+            traveled_distance -= f64(obstacles_speed)
+            // Why 0.5 + ... ?
+            // Because we start half a screen away from the first obstacle
+            score = i32(0.5 + math.floor(traveled_distance) / (WINDOW_WIDTH) )
 
             // endsection process
 
@@ -137,6 +149,10 @@ main :: proc(){
             rl.DrawRectangleRec(ceiling, rl.WHITE)
             rl.DrawRectangleRec(ground, rl.WHITE)
 
+            // ui
+            rl.DrawRectangleRec(ui_background, rl.BLACK)
+            score_text := fmt.caprintf("{}", score, allocator=context.temp_allocator)
+            rl.DrawText(score_text, WINDOW_WIDTH/2, 5, 25, rl.WHITE)
 
             rl.EndDrawing()
             // endsection drawing
