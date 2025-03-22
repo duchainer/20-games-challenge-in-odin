@@ -22,7 +22,7 @@ main :: proc(){
             x=f32(WINDOW_WIDTH),
             y=f32(height) - WINDOW_HEIGHT/2,
             width=60,
-            height=WINDOW_WIDTH/2,
+            height=WINDOW_WIDTH/2.5,
         }
     }
 
@@ -33,7 +33,7 @@ main :: proc(){
 
     bird : Bird
 
-    obstacles_arr : [3]rl.Rectangle
+    obstacles_arr : [3][2]rl.Rectangle
 
     obstacles_speed :f32
 
@@ -75,9 +75,12 @@ main :: proc(){
                 },
                 vertical_speed = -1, // Towards the top of the window
             }
-            obstacles_arr = [3]rl.Rectangle{
-                // We make the first one easier
-                generate_obstacle(rand.int31_max(WINDOW_HEIGHT/4)),
+            rand_height := rand.int31_max(WINDOW_HEIGHT/2)
+            obstacles_arr = [3][2]rl.Rectangle{
+                {
+                    generate_obstacle(rand_height),
+                    generate_obstacle(rand_height+WINDOW_HEIGHT),
+                },
                 {},
                 {},
             }
@@ -116,11 +119,13 @@ main :: proc(){
             bird.y += bird.vertical_speed
             // bird.vertical_speed *= 0.9
             bird.vertical_speed += 0.2
-            for &obstacle in obstacles_arr{
-                obstacle.x += obstacles_speed
-                if rl.CheckCollisionRecs(bird, obstacle){
-                    global_game_state = .GAME_ENDED
-                    continue
+            for &obstacles_pair in obstacles_arr{
+                for &obstacle in obstacles_pair{
+                    obstacle.x += obstacles_speed
+                    if rl.CheckCollisionRecs(bird, obstacle){
+                        global_game_state = .GAME_ENDED
+                        continue
+                    }
                 }
             }
             // ceiling check
@@ -141,9 +146,11 @@ main :: proc(){
             score = i32(0.5 + math.floor(traveled_distance) / (WINDOW_WIDTH) )
 
             if i32(traveled_distance) % WINDOW_WIDTH < i32(-obstacles_speed){
-                obstacles_arr[score % i32(len(obstacles_arr))] = generate_obstacle(
-                    rand.int31_max(WINDOW_HEIGHT/2),
-                )
+                rand_height := rand.int31_max(WINDOW_HEIGHT/2)
+                obstacles_arr[score % i32(len(obstacles_arr))] = {
+                    generate_obstacle(rand_height),
+                    generate_obstacle(rand_height+ WINDOW_HEIGHT),
+                }
             }
             // endsection process
 
@@ -153,8 +160,10 @@ main :: proc(){
             rl.ClearBackground(rl.BLACK)
 
             rl.DrawRectangleRec(bird, rl.WHITE)
-            for obstacle in obstacles_arr{
-                rl.DrawRectangleRec(obstacle, rl.WHITE)
+            for obstacles_pair in obstacles_arr{
+                for obstacle in obstacles_pair{
+                    rl.DrawRectangleRec(obstacle, rl.WHITE)
+                }
             }
             rl.DrawRectangleRec(ceiling, rl.WHITE)
             rl.DrawRectangleRec(ground, rl.WHITE)
