@@ -16,6 +16,7 @@ main :: proc(){
 
     background_image : rl.Image = rl.LoadImage("./background.png")
     foreground_image : rl.Image = rl.LoadImage("./teapot.png")
+    foreground_image2 : rl.Image = rl.LoadImage("./u.png")
     fmt.println(background_image.width, background_image.height)
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
@@ -28,6 +29,11 @@ main :: proc(){
 
         if rl.IsImageValid(foreground_image){
             texture := rl.LoadTextureFromImage(foreground_image)
+            rl.DrawTextureV(texture, {0,0}, rl.WHITE)
+        }
+
+        if rl.IsImageValid(foreground_image2){
+            texture := rl.LoadTextureFromImage(foreground_image2)
             rl.DrawTextureV(texture, {0,0}, rl.WHITE)
         }
 
