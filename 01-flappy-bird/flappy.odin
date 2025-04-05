@@ -7,7 +7,7 @@ import "core:math"
 
 main :: proc(){
 
-    // section raylib-setup
+    // region raylib-setup
     WINDOW_WIDTH :: 800
     WINDOW_HEIGHT :: 450
     title :: "duchainer's Flappy Bird"
@@ -15,7 +15,7 @@ main :: proc(){
     defer rl.CloseWindow()
 
     rl.SetTargetFPS(60)
-    // endsection raylib-setup
+    // endregion raylib-setup
 
     generate_obstacle:: proc(height:i32) -> rl.Rectangle {
         return rl.Rectangle{
@@ -107,15 +107,15 @@ main :: proc(){
             fallthrough
         }
         case .GAME_RUNNING :{
-            // section input
+            // region input
             if rl.IsKeyPressed(.SPACE){
                 // Towards the top of the window
                 bird.vertical_speed -= 5
             }
-            // endsection input
+            // endregion input
 
 
-            // section process
+            // region process
             bird.y += bird.vertical_speed
             // bird.vertical_speed *= 0.9
             bird.vertical_speed += 0.2
@@ -152,10 +152,10 @@ main :: proc(){
                     generate_obstacle(rand_height+ WINDOW_HEIGHT),
                 }
             }
-            // endsection process
+            // endregion process
 
 
-            // section drawing
+            // region drawing
             rl.BeginDrawing()
             rl.ClearBackground(rl.BLACK)
 
@@ -174,24 +174,24 @@ main :: proc(){
             rl.DrawText(score_text, WINDOW_WIDTH/2, 5, 25, rl.WHITE)
 
             rl.EndDrawing()
-            // endsection drawing
+            // endregion drawing
         }
 
         case .GAME_ENDED:  {
-            // section input
+            // region input
             if rl.IsKeyPressed(.SPACE){
                 global_game_state = .GAME_START
                 continue
             }
-            // endsection input
+            // endregion input
 
-            // section drawing
+            // region drawing
             rl.BeginDrawing()
             game_over_center :[2]i32: {WINDOW_WIDTH/2, WINDOW_HEIGHT/8}
             rl.DrawRectangle(game_over_center.x-30, game_over_center.y-5, 75, 20, rl.GRAY)
             rl.DrawText("Game Over", game_over_center.x-20, game_over_center.y, 10, rl.WHITE)
             rl.EndDrawing()
-            // endsection drawing
+            // endregion drawing
         }
         }
         free_all(context.temp_allocator)
