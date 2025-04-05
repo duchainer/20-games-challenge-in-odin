@@ -14,28 +14,40 @@ main :: proc(){
     rl.SetTargetFPS(60)
     // endsection raylib-setup
 
-    background_image : rl.Image = rl.LoadImage("./background.png")
-    foreground_image : rl.Image = rl.LoadImage("./teapot.png")
-    foreground_image2 : rl.Image = rl.LoadImage("./u.png")
+    // background_image : rl.Image = rl.LoadImage("./background.png")
+    background_image : rl.Image = rl.LoadImage("./teapot.png")
+    foreground_image : rl.Image = rl.LoadImage("./background.png")
+    // foreground_image2 : rl.Image = rl.LoadImage("./u.png")
+
+
+    background_texture : rl.Texture2D
+    background_texture = rl.LoadTextureFromImage(background_image)
+    // background_texture : rl.Texture2D
     fmt.println(background_image.width, background_image.height)
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
 
-        if rl.IsImageValid(background_image){
-            texture := rl.LoadTextureFromImage(background_image)
-            rl.DrawTextureV(texture, {0,0}, rl.WHITE)
+        if background_texture != {}{
+            rl.DrawTextureV(background_texture, {0,0}, rl.WHITE)
         }
+
+        background_mask := rl.ImageCopy(background_image)
+        rl.ImageAlphaCrop(&background_mask, 0)
+
+        foreground_texture : rl.Texture2D
+        defer rl.UnloadTexture(foreground_texture)
 
         if rl.IsImageValid(foreground_image){
-            texture := rl.LoadTextureFromImage(foreground_image)
-            rl.DrawTextureV(texture, {0,0}, rl.WHITE)
+            rl.ImageAlphaMask(&foreground_image, background_image)
+            foreground_texture = rl.LoadTextureFromImage(foreground_image)
+            rl.DrawTextureV(foreground_texture, {0,0}, rl.WHITE)
         }
 
-        if rl.IsImageValid(foreground_image2){
-            texture := rl.LoadTextureFromImage(foreground_image2)
-            rl.DrawTextureV(texture, {0,0}, rl.WHITE)
-        }
+        // if rl.IsImageValid(foreground_image2){
+        //     texture := rl.LoadTextureFromImage(foreground_image2)
+        //     rl.DrawTextureV(texture, {0,0}, rl.WHITE)
+        // }
 
 
 
