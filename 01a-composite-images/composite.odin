@@ -15,6 +15,7 @@ main :: proc(){
     // endsection raylib-setup
 
     background_image : rl.Image = rl.LoadImage("./background.png")
+    foreground_image : rl.Image = rl.LoadImage("./teapot.png")
     fmt.println(background_image.width, background_image.height)
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
@@ -22,6 +23,11 @@ main :: proc(){
 
         if rl.IsImageValid(background_image){
             texture := rl.LoadTextureFromImage(background_image)
+            rl.DrawTextureV(texture, {0,0}, rl.WHITE)
+        }
+
+        if rl.IsImageValid(foreground_image){
+            texture := rl.LoadTextureFromImage(foreground_image)
             rl.DrawTextureV(texture, {0,0}, rl.WHITE)
         }
 
