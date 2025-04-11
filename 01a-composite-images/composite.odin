@@ -19,12 +19,16 @@ main :: proc(){
 
     // background_image : rl.Image = rl.LoadImage("./background.png")
     background_image : rl.Image = rl.LoadImage("./star.png")
+    defer rl.UnloadImage(background_image)
     foreground_image : rl.Image = rl.LoadImage("./background.png")
-    foreground_image2 : rl.Image = rl.LoadImage("./teapot.png")
+    defer rl.UnloadImage(foreground_image)
+    // foreground_image : rl.Image = rl.LoadImage("./teapot.png")
 
 
     background_texture : rl.Texture2D
     background_texture = rl.LoadTextureFromImage(background_image)
+
+    foreground_texture : rl.Texture2D
     // background_texture : rl.Texture2D
     fmt.println(background_image.width, background_image.height)
     for !rl.WindowShouldClose(){
@@ -36,8 +40,11 @@ main :: proc(){
         // }
 
         background_mask : rl.Image
+        defer rl.UnloadImage(background_mask)
+
         {
             background_mask1 := rl.ImageCopy(background_image)
+            defer rl.UnloadImage(background_mask1)
             rl.ImageResizeCanvas(
                 &background_mask1,
                 MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT, // new size
@@ -46,6 +53,7 @@ main :: proc(){
             )
 
             background_mask2 := rl.ImageCopy(background_image)
+            defer rl.UnloadImage(background_mask2)
             rl.ImageResizeCanvas(
                 &background_mask2,
                 MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT, // new size
@@ -54,6 +62,7 @@ main :: proc(){
             )
 
             background_mask3 := rl.ImageCopy(background_image)
+            defer rl.UnloadImage(background_mask3)
             rl.ImageResizeCanvas(
                 &background_mask3,
                 MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT, // new size
@@ -84,16 +93,15 @@ main :: proc(){
             )
         }
 
-        foreground_texture : rl.Texture2D
-        defer rl.UnloadTexture(foreground_texture)
 
         if rl.IsImageValid(foreground_image){
             rl.ImageAlphaMask(&foreground_image, background_mask)
+            rl.UnloadTexture(foreground_texture)
             foreground_texture = rl.LoadTextureFromImage(foreground_image)
             rl.DrawTextureV(foreground_texture, {0,0}, rl.WHITE)
         }
 
-        assert(foreground_image2 != {})
+        // assert(foreground_image2 != {})
         // if rl.IsImageValid(foreground_image2){
         //     rl.ImageAlphaMask(&foreground_image2, background_mask)
         //     texture := rl.LoadTextureFromImage(foreground_image2)
