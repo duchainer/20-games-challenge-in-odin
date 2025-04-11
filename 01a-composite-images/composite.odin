@@ -1,9 +1,16 @@
 package composite_app_raylib
 
 import "core:fmt"
+import "core:mem"
+
 import rl "vendor:raylib"
 
-main :: proc(){
+
+main :: proc() {
+    // We should be doing any allocation on the Odin side
+    context.allocator = mem.panic_allocator()
+    context.temp_allocator = mem.panic_allocator()
+
     MAX_IMAGE_WIDTH :: 1024
     MAX_IMAGE_HEIGHT:: 512
     // section raylib-setup
