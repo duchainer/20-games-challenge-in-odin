@@ -24,11 +24,18 @@ main :: proc() {
     paddle_speed := rl.Vector2{4, 4}
 
     BALL_SIZE :: rl.Vector2{10, 10}
-    ball := rl.Rectangle{
-        x      = 400 - BALL_SIZE.x/2,
-        y      = 300,
-        width  = BALL_SIZE.x,
-        height = BALL_SIZE.y,
+    // You can declare anonymous types directly before usage:
+    ball := struct{rect:rl.Rectangle, speed: rl.Vector2}{
+        rect = rl.Rectangle{
+            x      = 400 - BALL_SIZE.x/2,
+            y      = 300,
+            width  = BALL_SIZE.x,
+            height = BALL_SIZE.y,
+        },
+        speed = rl.Vector2{
+            0,
+            2,
+        },
     }
 
     for !rl.WindowShouldClose(){
@@ -40,15 +47,18 @@ main :: proc() {
             paddle.x -= paddle_speed.x
         }
 
-        draw(paddle, ball)
+        ball.rect.x += ball.speed.x
+        ball.rect.y += ball.speed.y
+
+        draw(paddle, ball.rect)
 
     }
 
-    draw :: proc(paddle, ball: rl.Rectangle){
+    draw :: proc(paddle, ball_rect: rl.Rectangle){
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
         rl.DrawRectangleRec(paddle, rl.WHITE)
-        rl.DrawRectangleRec(ball, rl.WHITE)
+        rl.DrawRectangleRec(ball_rect, rl.WHITE)
         rl.EndDrawing()
     }
 
