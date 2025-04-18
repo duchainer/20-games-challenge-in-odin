@@ -27,13 +27,13 @@ main :: proc() {
     // You can declare anonymous types directly before usage:
     ball := struct{rect:rl.Rectangle, speed: rl.Vector2}{
         rect = rl.Rectangle{
-            x      = 400 - BALL_SIZE.x/2,
+            x      = 200 - BALL_SIZE.x/2,
             y      = 300,
             width  = BALL_SIZE.x,
             height = BALL_SIZE.y,
         },
         speed = rl.Vector2{
-            0,
+            1,
             2,
         },
     }
@@ -49,6 +49,12 @@ main :: proc() {
 
         ball.rect.x += ball.speed.x
         ball.rect.y += ball.speed.y
+
+        if coll_rect := rl.GetCollisionRec(ball.rect, paddle); coll_rect != {}  {
+            ball.speed *= -1
+        }
+
+
 
         draw(paddle, ball.rect)
 
