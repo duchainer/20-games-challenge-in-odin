@@ -60,6 +60,7 @@ main :: proc() {
 
     reset_bricks :: proc(bricks: []rl.Rectangle){
         bricks[0] = {100+50, 20, BRICK_SIZE.x, BRICK_SIZE.y}
+        bricks[1] = {100+50+1.5*BRICK_SIZE.x, 20, BRICK_SIZE.x, BRICK_SIZE.y}
     }
     reset_bricks(bricks[:])
 
@@ -67,13 +68,22 @@ main :: proc() {
 
         input(&paddle, paddle_speed)
 
-        if new_ball_dir, did_hit := ball_dir_calculate_if_collision(ball.rect, paddle.rect); did_hit {
+        ball_had_collision := false
+        for single_brick, i in bricks {
+            if new_ball_dir2, did_hit2 := ball_dir_calculate(ball.rect, single_brick); did_hit2 {
+                // Brick, bounces the ball, then brick disappears
+                ball.dir = new_ball_dir2
+                bricks[i] = {}
+                break
+            }
+        }
+
+        if ball_had_collision{
+            // Nothing, just prevent all the other else if when we already had one collision
+            // The ball can only collide a single brick or a paddle on the same frame
+        } else if new_ball_dir, did_hit := ball_dir_calculate(ball.rect, paddle.rect); did_hit {
             // Paddle, bounces the ball
             ball.dir = new_ball_dir
-        } else if new_ball_dir2, did_hit2 := ball_dir_calculate_if_collision(ball.rect, bricks[0]); did_hit2 {
-            // Brick, bounces the ball, then brick disappears
-            ball.dir = new_ball_dir2
-            bricks[0] = {}
         } else if ball.rect.x > WINDOW_WIDTH || ball.rect.x < 0{
             // Sides of Window, bounces the ball
             ball.dir.x *= -1
@@ -135,7 +145,7 @@ main :: proc() {
         }
     }
 
-    ball_dir_calculate_if_collision :: proc(next_ball_rect: rl.Rectangle, paddle: rl.Rectangle) -> (rl.Vector2, bool) {
+    ball_dir_calculate :: proc(next_ball_rect: rl.Rectangle, paddle: rl.Rectangle) -> (rl.Vector2, bool) {
         if rl.CheckCollisionRecs(next_ball_rect, paddle) {
             ball_center := rect_center(next_ball_rect)
             paddle_center := rect_center(paddle)
