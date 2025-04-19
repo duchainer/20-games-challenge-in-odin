@@ -56,14 +56,15 @@ main :: proc() {
     live_count := 3
 
     BRICK_SIZE :: rl.Vector2{30, 10}
-    bricks : [128]rl.Rectangle
+    BRICKS_WIDTH :: 15
+    BRICKS_HEIGHT :: 10
+    bricks : [BRICKS_WIDTH * BRICKS_HEIGHT]rl.Rectangle
 
     reset_bricks :: proc(bricks: []rl.Rectangle){
-        bricks_width := 12
-        for i in 0..<10{
-            for j in 0..<bricks_width{
-                bricks[i*bricks_width + j] = {
-                    x = 100+25+1.5*BRICK_SIZE.x*f32(j),
+        for i in 0..<BRICKS_HEIGHT{
+            for j in 0..<BRICKS_WIDTH{
+                bricks[i*BRICKS_WIDTH + j] = {
+                    x = 25+1.5*BRICK_SIZE.x*f32(j),
                     y = 20 + 20*f32(i),
                     width = BRICK_SIZE.x,
                     height = BRICK_SIZE.y,
