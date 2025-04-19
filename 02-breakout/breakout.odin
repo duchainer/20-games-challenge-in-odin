@@ -7,16 +7,18 @@ import "core:fmt"
 main :: proc() {
 
     // region raylib-setup
-    WINDOW_WIDTH :: 800
-    WINDOW_HEIGHT :: 450
+    WINDOW_WIDTH :: 800 * 2
+    WINDOW_HEIGHT :: 450 * 2
     title :: "duchainer's Breakout"
     rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title)
     defer rl.CloseWindow()
 
+    // rl.SetWindowState(rl.ConfigFlags)
+
     rl.SetTargetFPS(60)
     // endregion raylib-setup
 
-    PADDLE_SIZE :: rl.Vector2{50, 10}
+    PADDLE_SIZE :: rl.Vector2{150, 10}
     Paddle :: struct{
         rect: rl.Rectangle,
         color: rl.Color,
@@ -24,7 +26,7 @@ main :: proc() {
     paddle := Paddle{
         rect = rl.Rectangle{
             x      = 400 - PADDLE_SIZE.x/2,
-            y      = 400,
+            y      = WINDOW_HEIGHT - 50,
             width  = PADDLE_SIZE.x,
             height = PADDLE_SIZE.y,
         },
@@ -36,28 +38,28 @@ main :: proc() {
     Ball :: struct{rect:rl.Rectangle, dir: rl.Vector2, speed: f32}
     ball : Ball
 
-    reset_ball :: proc(ball: ^Ball){
+    reset_ball :: proc(ball: ^Ball, paddle: Paddle){
         ball^ = Ball{
             rect = rl.Rectangle{
-                x      = 350 - BALL_SIZE.x/2,
-                y      = 300,
+                x      = rect_center(paddle.rect).x,
+                y      = WINDOW_HEIGHT - 150,
                 width  = BALL_SIZE.x,
                 height = BALL_SIZE.y,
             },
             dir = linalg.normalize0(rl.Vector2{
+                0,
                 1,
-                2,
             }),
             speed = 5,
         }
     }
-    reset_ball(&ball)
+    reset_ball(&ball, paddle)
 
     live_count := 3
 
     BRICK_SIZE :: rl.Vector2{30, 10}
-    BRICKS_WIDTH :: 15
-    BRICKS_HEIGHT :: 10
+    BRICKS_WIDTH :: 35
+    BRICKS_HEIGHT :: 35
     bricks : [BRICKS_WIDTH * BRICKS_HEIGHT]rl.Rectangle
 
     reset_bricks :: proc(bricks: []rl.Rectangle){
@@ -76,7 +78,7 @@ main :: proc() {
 
     game_loop: for !rl.WindowShouldClose(){
 
-        input(&paddle, paddle_speed)
+        input(&paddle, paddle_speed, &ball)
 
         ball_had_collision := false
         for single_brick, i in bricks {
@@ -94,6 +96,7 @@ main :: proc() {
         } else if new_ball_dir, did_hit := ball_dir_calculate(ball.rect, paddle.rect); did_hit {
             // Paddle, bounces the ball
             ball.dir = new_ball_dir
+            ball.speed *= 1.05
         } else if ball.rect.x > WINDOW_WIDTH || ball.rect.x < 0{
             // Sides of Window, bounces the ball
             ball.dir.x *= -1
@@ -103,8 +106,8 @@ main :: proc() {
         } else if ball.rect.y > WINDOW_HEIGHT{
             // Bottom of Window, loses the ball
             if live_count >= 1{
-                live_count -= 1
-                reset_ball(&ball)
+                // live_count -= 1
+                reset_ball(&ball, paddle)
                 // reset_paddle(&paddle)
             } else {
                 fmt.println("GAME OVER")
@@ -164,13 +167,15 @@ main :: proc() {
         return {}, false
     }
 
-    input:: proc(paddle : ^Paddle, paddle_speed : rl.Vector2){
+    input:: proc(paddle : ^Paddle, paddle_speed : rl.Vector2, ball : ^Ball){
+        paddle.rect.x = f32(rl.GetMouseX())
         if rl.IsKeyDown(.D){
-            paddle.rect.x += paddle_speed.x
+            reset_ball(ball, paddle^)
+        //     paddle.rect.x += paddle_speed.x
         }
-        if rl.IsKeyDown(.A){
-            paddle.rect.x -= paddle_speed.x
-        }
+        // if rl.IsKeyDown(.A){
+        //     paddle.rect.x -= paddle_speed.x
+        // }
     }
 
 
