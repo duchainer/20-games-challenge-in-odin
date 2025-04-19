@@ -70,7 +70,13 @@ main :: proc() {
         ball.rect.y += ball.dir.y * ball.speed
 
 
-        draw(paddle.rect, ball.rect)
+        rl.BeginDrawing()
+
+        rl.ClearBackground(rl.BLACK)
+        rl.DrawRectangleRec(paddle.rect, rl.WHITE)
+        rl.DrawRectangleRec(ball.rect, rl.WHITE)
+
+        rl.EndDrawing()
 
     }
 
@@ -99,12 +105,5 @@ main :: proc() {
         }
     }
 
-    draw :: proc(paddle, ball_rect: rl.Rectangle){
-        rl.BeginDrawing()
-        rl.ClearBackground(rl.BLACK)
-        rl.DrawRectangleRec(paddle, rl.WHITE)
-        rl.DrawRectangleRec(ball_rect, rl.WHITE)
-        rl.EndDrawing()
-    }
 
 }
