@@ -55,12 +55,25 @@ main :: proc() {
 
     live_count := 3
 
+    BRICK_SIZE :: rl.Vector2{30, 10}
+    bricks : [128]rl.Rectangle
+
+    reset_bricks :: proc(bricks: []rl.Rectangle){
+        bricks[0] = {100+50, 20, BRICK_SIZE.x, BRICK_SIZE.y}
+    }
+    reset_bricks(bricks[:])
+
     game_loop: for !rl.WindowShouldClose(){
 
         input(&paddle, paddle_speed)
 
         if new_ball_dir, did_hit := ball_dir_calculate_if_collision(ball.rect, paddle.rect); did_hit {
+            // Paddle, bounces the ball
             ball.dir = new_ball_dir
+        } else if new_ball_dir2, did_hit2 := ball_dir_calculate_if_collision(ball.rect, bricks[0]); did_hit2 {
+            // Brick, bounces the ball, then brick disappears
+            ball.dir = new_ball_dir2
+            bricks[0] = {}
         } else if ball.rect.x > WINDOW_WIDTH || ball.rect.x < 0{
             // Sides of Window, bounces the ball
             ball.dir.x *= -1
@@ -71,7 +84,6 @@ main :: proc() {
             // Bottom of Window, loses the ball
             if live_count >= 1{
                 live_count -= 1
-                fmt.println("live_count: %v", live_count)
                 reset_ball(&ball)
                 // reset_paddle(&paddle)
             } else {
@@ -92,6 +104,16 @@ main :: proc() {
         rl.DrawRectangleRec(paddle.rect, rl.WHITE)
         rl.DrawRectangleRec(ball.rect, rl.WHITE)
 
+        for rect in bricks{
+            if rect == {}{
+                break
+            }
+            rl.DrawRectangleRec(rect, rl.WHITE)
+        }
+
+        //
+        // DRAW UI
+        //
         for i := 0; i < live_count; i += 1{
             ball_in_ui := rl.Rectangle{
                 x      = WINDOW_WIDTH - BALL_SIZE.x*2 - f32(i * 15),
@@ -104,6 +126,7 @@ main :: proc() {
                 rl.WHITE,
             )
         }
+
         rl.EndDrawing()
 
     }
