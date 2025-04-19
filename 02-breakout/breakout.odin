@@ -59,8 +59,17 @@ main :: proc() {
     bricks : [128]rl.Rectangle
 
     reset_bricks :: proc(bricks: []rl.Rectangle){
-        bricks[0] = {100+50, 20, BRICK_SIZE.x, BRICK_SIZE.y}
-        bricks[1] = {100+50+1.5*BRICK_SIZE.x, 20, BRICK_SIZE.x, BRICK_SIZE.y}
+        bricks_width := 12
+        for i in 0..<10{
+            for j in 0..<bricks_width{
+                bricks[i*bricks_width + j] = {
+                    x = 100+25+1.5*BRICK_SIZE.x*f32(j),
+                    y = 20 + 20*f32(i),
+                    width = BRICK_SIZE.x,
+                    height = BRICK_SIZE.y,
+                }
+            }
+        }
     }
     reset_bricks(bricks[:])
 
