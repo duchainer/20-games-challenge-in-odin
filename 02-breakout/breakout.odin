@@ -59,8 +59,7 @@ main :: proc() {
         ball.rect.y += ball.dir.y * ball.speed
 
 
-        rects := [?]rl.Rectangle{paddle.rect, ball.rect}
-        draw(rects[:])
+        draw(paddle.rect, ball.rect)
 
     }
 
@@ -89,12 +88,11 @@ main :: proc() {
         }
     }
 
-    draw :: proc(rects: []rl.Rectangle){
+    draw :: proc(paddle, ball_rect: rl.Rectangle){
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
-        for rect in rects{
-            rl.DrawRectangleRec(rect, rl.WHITE)
-        }
+        rl.DrawRectangleRec(paddle, rl.WHITE)
+        rl.DrawRectangleRec(ball_rect, rl.WHITE)
         rl.EndDrawing()
     }
 
