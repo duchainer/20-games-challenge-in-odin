@@ -105,9 +105,6 @@ main :: proc() {
         rl.DrawRectangleRec(ball.rect, rl.WHITE)
 
         for rect in bricks{
-            if rect == {}{
-                break
-            }
             rl.DrawRectangleRec(rect, rl.WHITE)
         }
 
