@@ -2,7 +2,7 @@ package breakout
 
 import rl "vendor:raylib"
 import "core:math/linalg"
-// import "core:fmt"
+import "core:fmt"
 
 main :: proc() {
 
@@ -34,21 +34,28 @@ main :: proc() {
 
     BALL_SIZE :: rl.Vector2{10, 10}
     Ball :: struct{rect:rl.Rectangle, dir: rl.Vector2, speed: f32}
-    ball := Ball{
-        rect = rl.Rectangle{
-            x      = 350 - BALL_SIZE.x/2,
-            y      = 300,
-            width  = BALL_SIZE.x,
-            height = BALL_SIZE.y,
-        },
-        dir = linalg.normalize0(rl.Vector2{
-            1,
-            2,
-        }),
-        speed = 5,
-    }
+    ball : Ball
 
-    for !rl.WindowShouldClose(){
+    reset_ball :: proc(ball: ^Ball){
+        ball^ = Ball{
+            rect = rl.Rectangle{
+                x      = 350 - BALL_SIZE.x/2,
+                y      = 300,
+                width  = BALL_SIZE.x,
+                height = BALL_SIZE.y,
+            },
+            dir = linalg.normalize0(rl.Vector2{
+                1,
+                2,
+            }),
+            speed = 5,
+        }
+    }
+    reset_ball(&ball)
+
+    live_count := 3
+
+    game_loop: for !rl.WindowShouldClose(){
 
         input(&paddle, paddle_speed)
 
@@ -62,6 +69,15 @@ main :: proc() {
             ball.dir.y *= -1
         } else if ball.rect.y > WINDOW_HEIGHT{
             // Bottom of Window, loses the ball
+            if live_count >= 1{
+                live_count -= 1
+                fmt.println("live_count: %v", live_count)
+                reset_ball(&ball)
+                // reset_paddle(&paddle)
+            } else {
+                fmt.println("GAME OVER")
+                break game_loop
+            }
         } else {
             // fmt.println("ball.rect: %v",ball.rect)
         }
@@ -76,6 +92,18 @@ main :: proc() {
         rl.DrawRectangleRec(paddle.rect, rl.WHITE)
         rl.DrawRectangleRec(ball.rect, rl.WHITE)
 
+        for i := 0; i < live_count; i += 1{
+            ball_in_ui := rl.Rectangle{
+                x      = WINDOW_WIDTH - BALL_SIZE.x*2 - f32(i * 15),
+                y      = WINDOW_HEIGHT - BALL_SIZE.y*2,
+                width  = BALL_SIZE.x,
+                height = BALL_SIZE.y,
+            }
+            rl.DrawRectangleRec(
+                ball_in_ui,
+                rl.WHITE,
+            )
+        }
         rl.EndDrawing()
 
     }
