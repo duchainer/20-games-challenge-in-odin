@@ -14,7 +14,7 @@ main :: proc(){
     rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title)
     defer rl.CloseWindow()
 
-    rl.SetTargetFPS(60)
+    rl.SetTargetFPS(10)
     // endregion raylib-setup
 
     generate_obstacle:: proc(height:i32) -> rl.Rectangle {
@@ -178,6 +178,7 @@ main :: proc(){
         }
 
         case .GAME_ENDED:  {
+	    fmt.println("BEGIN GAME_ENDED")
             // region input
             if rl.IsKeyPressed(.SPACE){
                 global_game_state = .GAME_START
@@ -187,11 +188,31 @@ main :: proc(){
 
             // region drawing
             rl.BeginDrawing()
+	    
+	   // region game drawing 
+            rl.ClearBackground(rl.BLACK)
+
+            rl.DrawRectangleRec(bird, rl.WHITE)
+            for obstacles_pair in obstacles_arr{
+                for obstacle in obstacles_pair{
+                    rl.DrawRectangleRec(obstacle, rl.WHITE)
+                }
+            }
+            rl.DrawRectangleRec(ceiling, rl.WHITE)
+            rl.DrawRectangleRec(ground, rl.WHITE)
+
+            // ui
+            rl.DrawRectangleRec(ui_background, rl.BLACK)
+            score_text := fmt.caprintf("{}", score, allocator=context.temp_allocator)
+            rl.DrawText(score_text, WINDOW_WIDTH/2, 5, 25, rl.WHITE)
+	   // endregion game drawing 
+
             game_over_center :[2]i32: {WINDOW_WIDTH/2, WINDOW_HEIGHT/8}
             rl.DrawRectangle(game_over_center.x-30, game_over_center.y-5, 75, 20, rl.GRAY)
             rl.DrawText("Game Over", game_over_center.x-20, game_over_center.y, 10, rl.WHITE)
             rl.EndDrawing()
             // endregion drawing
+	    fmt.println("END GAME_ENDED")
         }
         }
         free_all(context.temp_allocator)
