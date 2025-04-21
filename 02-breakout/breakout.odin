@@ -7,8 +7,8 @@ import "core:fmt"
 main :: proc() {
 
     // region raylib-setup
-    WINDOW_WIDTH :: 800 * 2
-    WINDOW_HEIGHT :: 450 * 2
+    WINDOW_WIDTH :: 800 //*2
+    WINDOW_HEIGHT :: 450 //*2
     title :: "duchainer's Breakout"
     rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title)
     defer rl.CloseWindow()
@@ -52,14 +52,19 @@ main :: proc() {
             }),
             speed = 5,
         }
+	for !rl.WindowShouldClose(){
+		if rl.IsKeyPressed(.SPACE) || rl.IsMouseButtonPressed(.LEFT){
+			break // wait for input
+		}
+	}
     }
     reset_ball(&ball, paddle)
 
     live_count := 3
 
     BRICK_SIZE :: rl.Vector2{30, 10}
-    BRICKS_WIDTH :: 35
-    BRICKS_HEIGHT :: 35
+    BRICKS_WIDTH :: 17 //* 2
+    BRICKS_HEIGHT :: 17 //* 2
     bricks : [BRICKS_WIDTH * BRICKS_HEIGHT]rl.Rectangle
 
     reset_bricks :: proc(bricks: []rl.Rectangle){
