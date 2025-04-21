@@ -14,7 +14,7 @@ main :: proc(){
     rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title)
     defer rl.CloseWindow()
 
-    rl.SetTargetFPS(10)
+    rl.SetTargetFPS(60)
     // endregion raylib-setup
 
     generate_obstacle:: proc(height:i32) -> rl.Rectangle {
@@ -178,7 +178,6 @@ main :: proc(){
         }
 
         case .GAME_ENDED:  {
-	    fmt.println("BEGIN GAME_ENDED")
             // region input
             if rl.IsKeyPressed(.SPACE){
                 global_game_state = .GAME_START
@@ -190,6 +189,7 @@ main :: proc(){
             rl.BeginDrawing()
 	    
 	   // region game drawing 
+	   // WHY? On MacOS there is swap buffer swapping between frames weirdly
             rl.ClearBackground(rl.BLACK)
 
             rl.DrawRectangleRec(bird, rl.WHITE)
@@ -212,7 +212,6 @@ main :: proc(){
             rl.DrawText("Game Over", game_over_center.x-20, game_over_center.y, 10, rl.WHITE)
             rl.EndDrawing()
             // endregion drawing
-	    fmt.println("END GAME_ENDED")
         }
         }
         free_all(context.temp_allocator)
