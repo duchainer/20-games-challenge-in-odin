@@ -9,7 +9,7 @@ main :: proc() {
 
     // region raylib-setup
     WINDOW_WIDTH :: 800 //*2
-    WINDOW_HEIGHT :: 450 //*2
+    WINDOW_HEIGHT :: 500 //*2
     title :: "duchainer's Breakout"
     rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title)
     defer rl.CloseWindow()
@@ -19,7 +19,7 @@ main :: proc() {
     rl.SetTargetFPS(60)
     // endregion raylib-setup
 
-    PADDLE_SIZE :: rl.Vector2{150, 10}
+    PADDLE_SIZE :: rl.Vector2{500, 10}
     Paddle :: struct{
         rect: rl.Rectangle,
         color: rl.Color,
@@ -59,7 +59,7 @@ main :: proc() {
                 1,
                 1,
             }),
-            speed = 5,
+            speed = 7,
         }
 
     }
@@ -114,10 +114,10 @@ main :: proc() {
             if ball_had_collision{
             // Nothing, just prevent all the other else if when we already had one collision
             // The ball can only collide a single brick or a paddle on the same frame
-            } else if new_ball_dir, did_hit := ball_dir_calculate(ball.rect, paddle.rect); did_hit {
+            } else if new_ball_dir, did_hit := ball_dir_calculate(ball.rect, paddle.rect, {0, 50}); did_hit {
             // Paddle, bounces the ball
             ball.dir = new_ball_dir
-            ball.speed *= 1.05
+            ball.speed *= 1.01
             } else if ball.rect.x > WINDOW_WIDTH || ball.rect.x < 0{
             // Sides of Window, bounces the ball
             ball.dir.x *= -1
@@ -155,11 +155,21 @@ main :: proc() {
         }
     }
 
-    ball_dir_calculate :: proc(next_ball_rect: rl.Rectangle, paddle: rl.Rectangle) -> (rl.Vector2, bool) {
-        if rl.CheckCollisionRecs(next_ball_rect, paddle) {
+    ball_dir_calculate :: proc(next_ball_rect: rl.Rectangle, other: rl.Rectangle, other_center_offset: rl.Vector2={}) -> (rl.Vector2, bool) {
+        if rl.CheckCollisionRecs(next_ball_rect, other) {
             ball_center := rect_center(next_ball_rect)
-            paddle_center := rect_center(paddle)
-            return linalg.normalize0(ball_center - paddle_center), true
+            // Why have a `other_center_offset`?
+            // Because we want angles to be closer to a 45 total deg around the y axis,
+            // not the whole 180 degrees
+            // In other words:
+            //  - balls going sideways are not fun:
+            //   - They take a while to reach a brick
+            //   - They will often hit a brick
+            //   - They take a while to come back
+            // So this `other_center_offset` is a workaround to fix when the breakout paddle
+            // is wider than the pong paddle was.
+            other_center := rect_center(other) + other_center_offset
+            return linalg.normalize0(ball_center - other_center), true
         }
         return {}, false
     }
