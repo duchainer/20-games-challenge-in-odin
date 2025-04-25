@@ -3,6 +3,7 @@ package breakout
 import rl "vendor:raylib"
 import "core:math/linalg"
 import "core:fmt"
+import "core:strings"
 
 main :: proc() {
 
@@ -38,6 +39,14 @@ main :: proc() {
     Ball :: struct{rect:rl.Rectangle, dir: rl.Vector2, speed: f32}
     ball : Ball
 
+    GLOBAL_GAME_STATE :: enum{
+        // MAIN_MENU,
+        JUST_SPAWNED_BALL,
+        GAME_RUNNING,
+        // GAME_ENDED,
+    }
+    global_game_state := GLOBAL_GAME_STATE.JUST_SPAWNED_BALL
+
     reset_ball :: proc(ball: ^Ball, paddle: Paddle){
         ball^ = Ball{
             rect = rl.Rectangle{
@@ -52,19 +61,15 @@ main :: proc() {
             }),
             speed = 5,
         }
-	for !rl.WindowShouldClose(){
-		if rl.IsKeyPressed(.SPACE) || rl.IsMouseButtonPressed(.LEFT){
-			break // wait for input
-		}
-	}
     }
     reset_ball(&ball, paddle)
+    global_game_state = .JUST_SPAWNED_BALL
 
-    live_count := 3
+    live_count : int = 3
 
     BRICK_SIZE :: rl.Vector2{30, 10}
     BRICKS_WIDTH :: 17 //* 2
-    BRICKS_HEIGHT :: 17 //* 2
+    BRICKS_HEIGHT :: 13 //* 2
     bricks : [BRICKS_WIDTH * BRICKS_HEIGHT]rl.Rectangle
 
     reset_bricks :: proc(bricks: []rl.Rectangle){
@@ -81,79 +86,65 @@ main :: proc() {
     }
     reset_bricks(bricks[:])
 
+
     game_loop: for !rl.WindowShouldClose(){
 
-        input(&paddle, paddle_speed, &ball)
+        switch global_game_state{
+        case .JUST_SPAWNED_BALL: {
+            if rl.IsKeyPressed(.SPACE) || rl.IsMouseButtonPressed(.LEFT){
+                global_game_state = .GAME_RUNNING
+            }
 
-        ball_had_collision := false
-        for single_brick, i in bricks {
+            draw(paddle, ball, bricks[:], live_count, "Press SPACE or LEFT CLICK")
+        }
+        case .GAME_RUNNING: {
+            input(&paddle, paddle_speed, &ball)
+
+            ball_had_collision := false
+            for single_brick, i in bricks {
             if new_ball_dir2, did_hit2 := ball_dir_calculate(ball.rect, single_brick); did_hit2 {
                 // Brick, bounces the ball, then brick disappears
                 ball.dir = new_ball_dir2
                 bricks[i] = {}
                 break
             }
-        }
+            }
 
-        if ball_had_collision{
+            if ball_had_collision{
             // Nothing, just prevent all the other else if when we already had one collision
             // The ball can only collide a single brick or a paddle on the same frame
-        } else if new_ball_dir, did_hit := ball_dir_calculate(ball.rect, paddle.rect); did_hit {
+            } else if new_ball_dir, did_hit := ball_dir_calculate(ball.rect, paddle.rect); did_hit {
             // Paddle, bounces the ball
             ball.dir = new_ball_dir
             ball.speed *= 1.05
-        } else if ball.rect.x > WINDOW_WIDTH || ball.rect.x < 0{
+            } else if ball.rect.x > WINDOW_WIDTH || ball.rect.x < 0{
             // Sides of Window, bounces the ball
             ball.dir.x *= -1
-        } else if ball.rect.y < 0 {
+            } else if ball.rect.y < 0 {
             // Top of Window, bounces the ball
             ball.dir.y *= -1
-        } else if ball.rect.y > WINDOW_HEIGHT{
+            } else if ball.rect.y > WINDOW_HEIGHT{
             // Bottom of Window, loses the ball
             if live_count >= 1{
                 // live_count -= 1
                 reset_ball(&ball, paddle)
+                global_game_state = .JUST_SPAWNED_BALL
                 // reset_paddle(&paddle)
             } else {
                 fmt.println("GAME OVER")
                 break game_loop
             }
-        } else {
+            } else {
             // fmt.println("ball.rect: %v",ball.rect)
-        }
-
-        ball.rect.x += ball.dir.x * ball.speed
-        ball.rect.y += ball.dir.y * ball.speed
-
-
-        rl.BeginDrawing()
-
-        rl.ClearBackground(rl.BLACK)
-        rl.DrawRectangleRec(paddle.rect, rl.WHITE)
-        rl.DrawRectangleRec(ball.rect, rl.WHITE)
-
-        for rect in bricks{
-            rl.DrawRectangleRec(rect, rl.WHITE)
-        }
-
-        //
-        // DRAW UI
-        //
-        for i := 0; i < live_count; i += 1{
-            ball_in_ui := rl.Rectangle{
-                x      = WINDOW_WIDTH - BALL_SIZE.x*2 - f32(i * 15),
-                y      = WINDOW_HEIGHT - BALL_SIZE.y*2,
-                width  = BALL_SIZE.x,
-                height = BALL_SIZE.y,
             }
-            rl.DrawRectangleRec(
-                ball_in_ui,
-                rl.WHITE,
-            )
-        }
 
-        rl.EndDrawing()
+            ball.rect.x += ball.dir.x * ball.speed
+            ball.rect.y += ball.dir.y * ball.speed
 
+
+            draw(paddle, ball, bricks[:], live_count, "")
+        }}
+        // free_all(context.temp_allocator)
     }
 
     rect_center :: proc (rect: rl.Rectangle) -> rl.Vector2 {
@@ -183,5 +174,45 @@ main :: proc() {
         // }
     }
 
+    draw:: proc(paddle: Paddle, ball: Ball, bricks: []rl.Rectangle, live_count: int, message: string){
+        rl.BeginDrawing()
+
+        rl.ClearBackground(rl.BLACK)
+        rl.DrawRectangleRec(paddle.rect, rl.WHITE)
+        rl.DrawRectangleRec(ball.rect, rl.WHITE)
+
+        for rect in bricks{
+            rl.DrawRectangleRec(rect, rl.WHITE)
+        }
+
+        //
+        // DRAW UI
+        //
+        for i := 0; i < live_count; i += 1{
+            ball_in_ui := rl.Rectangle{
+                x      = WINDOW_WIDTH - BALL_SIZE.x*2 - f32(i * 15),
+                y      = WINDOW_HEIGHT - BALL_SIZE.y*2,
+                width  = BALL_SIZE.x,
+                height = BALL_SIZE.y,
+            }
+            rl.DrawRectangleRec(
+                ball_in_ui,
+                rl.WHITE,
+            )
+        }
+
+        if message != "" {
+            rl.DrawRectangleRec(rl.Rectangle{
+                200-10, 200 -10, 405, 50,
+            }, rl.GRAY)
+
+            padded_message := strings.center_justify(message, 27, " ", context.temp_allocator)
+            c_message := strings.clone_to_cstring(padded_message, context.temp_allocator)
+            rl.DrawText(c_message, 200, 200, 25, rl.WHITE)
+            // free_all(context.temp_allocator)
+        }
+
+        rl.EndDrawing()
+    }
 
 }
