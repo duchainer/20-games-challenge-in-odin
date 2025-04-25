@@ -50,17 +50,18 @@ main :: proc() {
     reset_ball :: proc(ball: ^Ball, paddle: Paddle){
         ball^ = Ball{
             rect = rl.Rectangle{
-                x      = rect_center(paddle.rect).x,
+                x      = (WINDOW_WIDTH - BALL_SIZE.x)/2, //rect_center(paddle.rect).x,
                 y      = WINDOW_HEIGHT - 150,
                 width  = BALL_SIZE.x,
                 height = BALL_SIZE.y,
             },
             dir = linalg.normalize0(rl.Vector2{
-                0,
+                1,
                 1,
             }),
             speed = 5,
         }
+
     }
     reset_ball(&ball, paddle)
     global_game_state = .JUST_SPAWNED_BALL
