@@ -19,7 +19,7 @@ main :: proc() {
     rl.SetTargetFPS(60)
     // endregion raylib-setup
 
-    PADDLE_SIZE :: rl.Vector2{500, 10}
+    PADDLE_SIZE :: rl.Vector2{200, 10}
     Paddle :: struct{
         rect: rl.Rectangle,
         color: rl.Color,
@@ -127,7 +127,7 @@ main :: proc() {
             } else if ball.rect.y > WINDOW_HEIGHT{
             // Bottom of Window, loses the ball
             if live_count >= 1{
-                // live_count -= 1
+                live_count -= 1
                 reset_ball(&ball, paddle)
                 global_game_state = .JUST_SPAWNED_BALL
                 // reset_paddle(&paddle)
