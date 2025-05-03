@@ -8,10 +8,13 @@ import "core:strings"
 main :: proc() {
 
     // region raylib-setup
-    WINDOW_WIDTH :: 800 //*2
-    WINDOW_HEIGHT :: 500 //*2
+    GAME__WINDOW_WIDTH :: 800 //*2
+    GAME__WINDOW_HEIGHT :: 500 //*2
+    FULL__WINDOW_WIDTH :: GAME__WINDOW_WIDTH * 2
+    FULL__WINDOW_HEIGHT :: GAME__WINDOW_HEIGHT * 2
+
     title :: "duchainer's Breakout"
-    rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title)
+    rl.InitWindow(FULL__WINDOW_WIDTH, FULL__WINDOW_HEIGHT, title)
     defer rl.CloseWindow()
 
     // rl.SetWindowState(rl.ConfigFlags)
@@ -27,7 +30,7 @@ main :: proc() {
     paddle := Paddle{
         rect = rl.Rectangle{
             x      = 400 - PADDLE_SIZE.x/2,
-            y      = WINDOW_HEIGHT - 50,
+            y      = GAME__WINDOW_HEIGHT - 50,
             width  = PADDLE_SIZE.x,
             height = PADDLE_SIZE.y,
         },
@@ -50,8 +53,8 @@ main :: proc() {
     reset_ball :: proc(ball: ^Ball, paddle: Paddle){
         ball^ = Ball{
             rect = rl.Rectangle{
-                x      = (WINDOW_WIDTH - BALL_SIZE.x)/2, //rect_center(paddle.rect).x,
-                y      = WINDOW_HEIGHT - 150,
+                x      = (GAME__WINDOW_WIDTH - BALL_SIZE.x)/2, //rect_center(paddle.rect).x,
+                y      = GAME__WINDOW_HEIGHT - 150,
                 width  = BALL_SIZE.x,
                 height = BALL_SIZE.y,
             },
@@ -88,8 +91,26 @@ main :: proc() {
     reset_bricks(bricks[:])
 
 
+    clamped_mouse_pos : rl.Vector2
     game_loop: for !rl.WindowShouldClose(){
 
+        // We set the game on the left side, and capture the mouse in it.
+        // That way the rest is the "code editor"
+
+        // We have to sync the mouse pos on the 2 render swap buffer, so this is an attempt
+        // TODO: Try to run the game at 90 FPS, as 120 FPS didn't look to have that issue
+        if clamped_mouse_pos != {FULL__WINDOW_WIDTH, FULL__WINDOW_HEIGHT}{
+            rl.SetMousePosition(i32(clamped_mouse_pos.x), i32(clamped_mouse_pos.y))
+            // Clamp the mouse with the latest position, next frame
+            clamped_mouse_pos = {FULL__WINDOW_WIDTH, FULL__WINDOW_HEIGHT}
+        }else{
+            // Clamp the mouse with this same position, next frame
+            clamped_mouse_pos = rl.Vector2Clamp(
+                rl.GetMousePosition(), {0, 0}, {GAME__WINDOW_WIDTH, GAME__WINDOW_HEIGHT},
+            )
+            fmt.println("clamped_mouse_pos", clamped_mouse_pos, "rl.GetMousePosition()", rl.GetMousePosition())
+            rl.SetMousePosition(i32(clamped_mouse_pos.x), i32(clamped_mouse_pos.y))
+        }
         switch global_game_state{
         case .JUST_SPAWNED_BALL: {
             if rl.IsKeyPressed(.SPACE) || rl.IsMouseButtonPressed(.LEFT){
@@ -118,18 +139,18 @@ main :: proc() {
             // Paddle, bounces the ball
             ball.dir = new_ball_dir
             ball.speed *= 1.01
-            } else if ball.rect.x > WINDOW_WIDTH || ball.rect.x < 0{
+            } else if ball.rect.x > GAME__WINDOW_WIDTH || ball.rect.x < 0{
             // Sides of Window, bounces the ball
             ball.dir.x *= -1
             } else if ball.rect.y < 0 {
             // Top of Window, bounces the ball
             ball.dir.y *= -1
-            } else if ball.rect.y > WINDOW_HEIGHT{
+            } else if ball.rect.y > GAME__WINDOW_HEIGHT{
             // Bottom of Window, loses the ball
             if live_count >= 1{
-                live_count -= 1
-                reset_ball(&ball, paddle)
-                global_game_state = .JUST_SPAWNED_BALL
+                // live_count -= 1
+                // reset_ball(&ball, paddle)
+                // global_game_state = .JUST_SPAWNED_BALL
                 // reset_paddle(&paddle)
             } else {
                 fmt.println("GAME OVER")
@@ -201,8 +222,8 @@ main :: proc() {
         //
         for i := 0; i < live_count; i += 1{
             ball_in_ui := rl.Rectangle{
-                x      = WINDOW_WIDTH - BALL_SIZE.x*2 - f32(i * 15),
-                y      = WINDOW_HEIGHT - BALL_SIZE.y*2,
+                x      = GAME__WINDOW_WIDTH - BALL_SIZE.x*2 - f32(i * 15),
+                y      = GAME__WINDOW_HEIGHT - BALL_SIZE.y*2,
                 width  = BALL_SIZE.x,
                 height = BALL_SIZE.y,
             }
