@@ -91,7 +91,11 @@ main :: proc() {
     reset_bricks(bricks[:])
 
 
-    clamped_mouse_pos : rl.Vector2
+    // clamped_mouse_pos : rl.Vector2
+
+    text_box_text := "HELLO WORLD"
+    c_text_box_text := strings.clone_to_cstring(text_box_text, context.allocator)
+    fmt.println(c_text_box_text)
     game_loop: for !rl.WindowShouldClose(){
 
         // We set the game on the left side, and capture the mouse in it.
@@ -99,18 +103,70 @@ main :: proc() {
 
         // We have to sync the mouse pos on the 2 render swap buffer, so this is an attempt
         // TODO: Try to run the game at 90 FPS, as 120 FPS didn't look to have that issue
-        if clamped_mouse_pos != {FULL__WINDOW_WIDTH, FULL__WINDOW_HEIGHT}{
-            rl.SetMousePosition(i32(clamped_mouse_pos.x), i32(clamped_mouse_pos.y))
-            // Clamp the mouse with the latest position, next frame
-            clamped_mouse_pos = {FULL__WINDOW_WIDTH, FULL__WINDOW_HEIGHT}
-        }else{
-            // Clamp the mouse with this same position, next frame
-            clamped_mouse_pos = rl.Vector2Clamp(
-                rl.GetMousePosition(), {0, 0}, {GAME__WINDOW_WIDTH, GAME__WINDOW_HEIGHT},
-            )
-            fmt.println("clamped_mouse_pos", clamped_mouse_pos, "rl.GetMousePosition()", rl.GetMousePosition())
-            rl.SetMousePosition(i32(clamped_mouse_pos.x), i32(clamped_mouse_pos.y))
+        // if clamped_mouse_pos != {FULL__WINDOW_WIDTH, FULL__WINDOW_HEIGHT}{
+        //     rl.SetMousePosition(i32(clamped_mouse_pos.x), i32(clamped_mouse_pos.y))
+        //     // Clamp the mouse with the latest position, next frame
+        //     clamped_mouse_pos = {FULL__WINDOW_WIDTH, FULL__WINDOW_HEIGHT}
+        // }else{
+        //     // Clamp the mouse with this same position, next frame
+        //     clamped_mouse_pos = rl.Vector2Clamp(
+        //         rl.GetMousePosition(), {0, 0}, {GAME__WINDOW_WIDTH, GAME__WINDOW_HEIGHT},
+        //     )
+        //     fmt.println("clamped_mouse_pos", clamped_mouse_pos, "rl.GetMousePosition()", rl.GetMousePosition())
+        //     rl.SetMousePosition(i32(clamped_mouse_pos.x), i32(clamped_mouse_pos.y))
+        // }
+        text_box_rect := rl.Rectangle{
+            x = FULL__WINDOW_WIDTH - GAME__WINDOW_WIDTH,
+            y = FULL__WINDOW_HEIGHT - GAME__WINDOW_HEIGHT,
+            width = FULL__WINDOW_WIDTH - GAME__WINDOW_WIDTH,
+            height = 15,//FULL__WINDOW_HEIGHT - GAME__WINDOW_HEIGHT,
         }
+        // TODO Figure out how to properly set the c_text_box_text for no Seg Fault on long text.
+        // TODO Figure multi-line text editor for Code Editor
+        // NOTE: No Seg Fault with 100 chars it seems, for a 11 char-length "HELLO WORLD" text_box_text
+        // But seems like that is mostly because I could write over other data, it seems, because the cstring
+        //  is only 1 byte longer than a odin string, the null "terminating" byte
+        //   clone_to_cstring :: proc(s: string, allocator := context.allocator, loc := #caller_location) -> (res: cstring, err: mem.Allocator_Error) #optional_allocator_error {
+        //   	c := make([]byte, len(s)+1, allocator, loc) or_return
+        //   	copy(c, s)
+        //   	c[len(s)] = 0
+        //   	return cstring(&c[0]), nil
+        //   }
+        text_max_length : i32 = 100
+        can_edit := true
+        rl.GuiTextBox(text_box_rect, c_text_box_text, text_max_length, can_edit)
+
+        // fmt.println(rl.GuiGetFont())
+        // DEFAULT rl.GuiGetFont()
+        // Font{
+        //     baseSize = 10,
+        //     glyphCount = 224,
+        //     glyphPadding = 0,
+        //     texture = Texture{
+        //         id = 2,
+        //         width = 128,
+        //         height = 128,
+        //         mipmaps = 1,
+        //         format = "UNCOMPRESSED_GRAY_ALPHA"
+        //     },
+        //     recs = &Rectangle{
+        //         x = 1, y = 1, width = 3, height = 10
+        //     },
+        //     glyphs = &GlyphInfo{
+        //         value =  ,
+        //         offsetX = 0,
+        //         offsetY = 0,
+        //         advanceX = 0,
+        //         image = Image{
+        //             data = 0x315EF050,
+        //             width = 3,
+        //             height = 10,
+        //             mipmaps = 1,
+        //             format = "UNCOMPRESSED_GRAY_ALPHA"
+        //         }
+        //     }
+        // }
+
         switch global_game_state{
         case .JUST_SPAWNED_BALL: {
             if rl.IsKeyPressed(.SPACE) || rl.IsMouseButtonPressed(.LEFT){
